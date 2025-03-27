@@ -6,8 +6,8 @@
 <nav>
   Dash app
   <a href="/">Home</a>
-  <a href="/">Login</a>
-  <a href="/">Register</a>
+  <a href="/login">Login</a>
+  <a href="/register">Register</a>
 </nav>
 
 {@render children()}

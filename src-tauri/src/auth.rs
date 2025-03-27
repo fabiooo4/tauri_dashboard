@@ -1,8 +1,12 @@
 use crate::database::{User, UserDb, UserDbError};
 
 #[tauri::command]
-pub fn login(username: &str, password: &str) -> String {
-    format!("Hello, {}!\nYour password is: {}", username, password)
+pub fn login(username: &str, password: &str) -> Option<User> {
+    let user = User::new(username, password);
+    match UserDb::contains(&user) {
+        true => Some(user),
+        false => None,
+    }
 }
 
 #[tauri::command]
