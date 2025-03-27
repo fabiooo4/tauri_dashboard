@@ -1,7 +1,8 @@
 use std::{
     fs::{self, File},
-    io::Write,
+    io::{Seek, SeekFrom, Write},
     path::Path,
+    sync::{Arc, Mutex},
 };
 
 use serde::{Deserialize, Serialize};
@@ -24,24 +25,33 @@ impl User {
     }
 }
 
-pub struct UserDb;
-impl UserDb {
+pub struct UserDb<'a> {
+    path: &'a Path,
+}
+
+impl<'a> UserDb<'a> {
+    pub fn new(path: &'a str) -> Self {
+        Self {
+            path: Path::new(path),
+        }
+    }
+
     /// Get the file descriptor of the database csv file
-    fn get_db(path: &Path) -> File {
-        if let Ok(exists) = path.try_exists() {
+    fn get_db(&self) -> File {
+        if let Ok(exists) = self.path.try_exists() {
             if !exists {
-                if let Some(dir) = path.parent() {
+                if let Some(dir) = self.path.parent() {
                     fs::create_dir_all(dir)
                         .unwrap_or_else(|_| panic!("Failed to create directory: {:?}", dir))
                 }
 
-                File::create(path).expect("Can't open file in read-write mode");
+                File::create(self.path).expect("Can't open file in read-write mode");
             }
 
             let mut db = File::options()
                 .read(true)
                 .append(true)
-                .open(path)
+                .open(self.path)
                 .expect("Can't open file in read-write mode");
 
             // If file is empty insert a csv header by serializing the User struct
@@ -53,36 +63,39 @@ impl UserDb {
 
                 // remove the last line to keep only the header
                 db.write_all(&content[..content.len() - 2])
-                    .unwrap_or_else(|_| panic!("Unable to write to file: {:?}", path));
+                    .unwrap_or_else(|_| panic!("Unable to write to file: {:?}", self.path));
             }
 
             db
         } else {
-            panic!("Cannot check existance of file {path:?}");
+            panic!("Cannot check existance of file {:?}", self.path);
         }
     }
 
     /// Check if a user is already registered
-    pub fn contains(user: &User) -> bool {
-        let db = UserDb::get_db(Path::new(USER_DB_PATH));
-        let mut reader = csv::Reader::from_reader(db);
+    pub fn contains(&self, user: &User) -> bool {
+        let mut reader = csv::Reader::from_reader(self.get_db());
 
         reader
             .deserialize::<User>()
-            .map(|u| u.expect("Failed to deserialize User"))
+            // .map(|u| u.expect("Failed to deserialize User"))
+            .filter_map(|result| result.ok())
             .any(|u| u == *user)
     }
 
     /// Add a user entry to the database
-    pub fn push(new_user: User) -> Result<(), UserDbError> {
-        if UserDb::contains(&new_user) {
+    pub fn push(&self, new_user: User) -> Result<(), UserDbError> {
+        if self.contains(&new_user) {
             return Err(UserDbError::ExistingUser);
-        } else {
-            let db = UserDb::get_db(Path::new(USER_DB_PATH));
-            let mut wtr = csv::WriterBuilder::new().has_headers(false).from_writer(db);
-
-            wtr.serialize(new_user)?;
         }
+
+        let mut wtr = csv::WriterBuilder::new()
+            .has_headers(false)
+            .from_writer(self.get_db());
+
+        wtr.serialize(new_user)?;
+
+        wtr.flush()?;
 
         Ok(())
     }
@@ -93,6 +106,8 @@ impl UserDb {
 pub enum UserDbError {
     #[error(transparent)]
     Csv(#[from] csv::Error),
+    #[error(transparent)]
+    Io(#[from] std::io::Error),
     #[error("The user is already registered")]
     ExistingUser,
 }
