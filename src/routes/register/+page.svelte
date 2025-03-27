@@ -1,31 +1,10 @@
 <script lang="ts">
-  import { invoke } from "@tauri-apps/api/core";
-
-  let username: string = $state("");
-  let password: string = $state("");
-
-  let res: string = $state("");
-
-  async function register(event: Event) {
-    event.preventDefault();
-
-    await invoke("register", { username, password })
-      .then((_) => {
-        res = "Registered successfully";
-        username = "";
-        password = "";
-      })
-      .catch((err) => (res = err));
-  }
+  import RegisterForm from "./register-form.svelte";
+  let { data } = $props();
 </script>
 
-<main>
-  <h1>Register</h1>
-  <form onsubmit={register}>
-    <input type="text" placeholder="Username" bind:value={username} />
-    <input type="password" placeholder="Password" bind:value={password} />
-    <button type="submit">Register</button>
-  </form>
+<main class="py-4 mx-[10%] sm:mx-[30%] lg:mx-[35%] flex flex-col justify-center">
+  <h1 class="text-3xl font-bold mb-3">Register</h1>
 
-  <p>{res}</p>
+  <RegisterForm data={data.form} />
 </main>

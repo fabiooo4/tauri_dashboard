@@ -1,14 +1,10 @@
 use std::{
     fs::{self, File},
-    io::{Seek, SeekFrom, Write},
+    io::Write,
     path::Path,
-    sync::{Arc, Mutex},
 };
 
 use serde::{Deserialize, Serialize};
-
-// Database config
-static USER_DB_PATH: &str = "database/users.csv";
 
 #[derive(Serialize, Deserialize, PartialEq, Eq, Debug)]
 pub struct User {
@@ -22,6 +18,10 @@ impl User {
             username: username.to_string(),
             password: password.to_string(),
         }
+    }
+
+    pub fn is_empty(&self) -> bool {
+        self.username.is_empty() || self.password.is_empty()
     }
 }
 
@@ -78,13 +78,16 @@ impl<'a> UserDb<'a> {
 
         reader
             .deserialize::<User>()
-            // .map(|u| u.expect("Failed to deserialize User"))
             .filter_map(|result| result.ok())
             .any(|u| u == *user)
     }
 
     /// Add a user entry to the database
     pub fn push(&self, new_user: User) -> Result<(), UserDbError> {
+        if new_user.is_empty() {
+            return Err(UserDbError::EmptyUser);
+        }
+
         if self.contains(&new_user) {
             return Err(UserDbError::ExistingUser);
         }
@@ -110,6 +113,10 @@ pub enum UserDbError {
     Io(#[from] std::io::Error),
     #[error("The user is already registered")]
     ExistingUser,
+    #[error("No username or password provided")]
+    EmptyUser,
+    #[error("Wrong username or password")]
+    NoUserFound,
 }
 
 impl Serialize for UserDbError {

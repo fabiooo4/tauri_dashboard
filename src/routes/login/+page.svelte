@@ -1,43 +1,10 @@
 <script lang="ts">
-  import { invoke } from "@tauri-apps/api/core";
-  import { userSchema } from "$lib/types/schemas";
-
-  let username: string = $state("");
-  let password: string = $state("");
-
-  let user: User = $state(undefined);
-
-  let message: string = $state("");
-
-  async function login(event: Event) {
-    event.preventDefault();
-
-    await invoke("login", { username, password })
-      .then((usr) => {
-        username = "";
-        password = "";
-
-        user = userSchema.parse(usr);
-
-        message = "Login successful";
-      })
-      .catch(() => (message = "Wrong username or password"));
-  }
+  import LoginForm from "./login-form.svelte";
+  let { data } = $props();
 </script>
 
-<main>
-  <h1>Login</h1>
-  <form onsubmit={login}>
-    <input type="text" placeholder="Username" bind:value={username} />
-    <input type="password" placeholder="Password" bind:value={password} />
-    <button type="submit">Login</button>
-  </form>
+<main class="py-4 mx-[10%] sm:mx-[30%] lg:mx-[35%] flex flex-col justify-center">
+  <h1 class="text-3xl font-bold mb-3">Login</h1>
 
-  <p>{message}</p>
-
-  {#if user !== undefined}
-    <a href="/dashboard">Go to dashboard</a>
-  {/if}
-
-  <p>{JSON.stringify(user, null, 2)}</p>
+  <LoginForm data={data.form} />
 </main>
