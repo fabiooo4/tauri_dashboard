@@ -1,5 +1,5 @@
 <script lang="ts">
-  import LoginForm from "./login-form.svelte";
+  import LoginForm from "$lib/components/LoginForm.svelte";
   let { data } = $props();
 </script>
 

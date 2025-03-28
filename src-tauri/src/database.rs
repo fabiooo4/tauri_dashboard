@@ -6,7 +6,7 @@ use std::{
 
 use serde::{Deserialize, Serialize};
 
-#[derive(Serialize, Deserialize, PartialEq, Eq, Debug)]
+#[derive(Serialize, Deserialize, PartialEq, Eq, Debug, Clone)]
 pub struct User {
     username: String,
     password: String,
@@ -27,13 +27,23 @@ impl User {
 
 pub struct UserDb<'a> {
     path: &'a Path,
+    current_user: Option<User>,
 }
 
 impl<'a> UserDb<'a> {
     pub fn new(path: &'a str) -> Self {
         Self {
             path: Path::new(path),
+            current_user: None,
         }
+    }
+
+    pub fn set_current_user(&mut self, user: &User) {
+        self.current_user = Some(user.clone());
+    }
+
+    pub fn get_current_user(&self) -> Option<User> {
+        self.current_user.clone()
     }
 
     /// Get the file descriptor of the database csv file

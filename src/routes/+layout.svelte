@@ -1,35 +1,17 @@
 <script lang="ts">
-  import "../app.css";
-  import { page } from "$app/state";
+  import Navbar from "$lib/components/Navbar.svelte";
 
-  let paths = [
-    ["/", "Home"],
-    ["/login", "Login"],
-    ["/register", "Register"],
+  let paths: Array<{ path: string; name: string }> = [
+    { path: "/", name: "Home" },
+    { path: "/login", name: "Login" },
+    { path: "/register", name: "Home" },
   ];
 
   let { children } = $props();
 </script>
 
-<nav
-  class="flex h-16 items-center justify-between bg-primary px-4 font-bold
-  text-primary-foreground cursor-default"
->
-  <div class="cursor-auto">Dash app</div>
+<div class="h-svh">
+  <Navbar {paths} />
 
-  <div class="space-x-2 cursor-default">
-    {#each paths as [path, name]}
-      <a
-        href={path}
-        aria-current={page.url.pathname === "/"}
-        class="hover:bg-primary-foreground hover:text-primary rounded p-2
-      hover:transition-all duration-100
-      {page.url.pathname === path ? 'bg-primary-foreground text-primary' : ''}"
-      >
-        {name}
-      </a>
-    {/each}
-  </div>
-</nav>
-
-{@render children()}
+  {@render children()}
+</div>
