@@ -16,6 +16,4 @@
     <li class="odd:bg-primary-foreground">Model-View-Controller architecture</li>
     <li class="odd:bg-primary-foreground">CSV-based user data storage</li>
   </ul>
-
-  <a href="/dashboard" class="mt-4 underline">Dashboard</a>
 </main>

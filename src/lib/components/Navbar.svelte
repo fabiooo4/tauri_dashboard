@@ -2,10 +2,7 @@
   import "../../app.css";
   import { page } from "$app/state";
 
-  let {
-    paths,
-  }: { paths: Array<{ path: string; name: string; callback?: any }>} =
-    $props();
+  let { paths } = $props();
 </script>
 
 <nav

@@ -1,7 +1,8 @@
 use std::{
     fs::{self, File},
-    io::Write,
+    io::{BufRead, Write},
     path::Path,
+    str::from_utf8,
 };
 
 use serde::{Deserialize, Serialize};
@@ -71,10 +72,18 @@ impl<'a> UserDb<'a> {
                 let mut wtr = csv::Writer::from_writer(vec![]);
 
                 wtr.serialize(User::new("", "")).unwrap();
-                let content = wtr.into_inner().unwrap();
 
                 // remove the last line to keep only the header
-                db.write_all(&content[..content.len() - 2])
+                let content = wtr.into_inner().expect("Unable to serialize user");
+                let header = from_utf8(&content)
+                    .expect("Invalid UTF-8 sequence")
+                    .lines()
+                    .next()
+                    .unwrap()
+                    .to_owned()
+                    + "\n";
+
+                db.write_all(header.as_bytes())
                     .unwrap_or_else(|_| panic!("Unable to write to file: {:?}", self.path));
             }
 
