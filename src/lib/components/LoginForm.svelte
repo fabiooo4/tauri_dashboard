@@ -21,6 +21,8 @@
   async function login(event: Event) {
     event.preventDefault();
 
+    console.log($formData)
+
     await invoke("login", {
       username: $formData.username,
       password: $formData.password,

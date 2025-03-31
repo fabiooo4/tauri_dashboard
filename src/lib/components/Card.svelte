@@ -6,7 +6,8 @@
     title,
     subtitle,
     button,
-  }: { title: string; subtitle: string; button: string } = $props();
+    href,
+  }: { title: string; subtitle: string; button: string; href?: string } = $props();
 </script>
 
 <Card.Root>
@@ -18,6 +19,6 @@
     <!-- <p>Card Content</p> -->
   </Card.Content>
   <Card.Footer>
-    <Button class="w-full">{button}</Button>
+    <Button class="w-full" {href}>{button}</Button>
   </Card.Footer>
 </Card.Root>

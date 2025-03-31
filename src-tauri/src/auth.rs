@@ -52,3 +52,21 @@ pub fn get_current_user(user_db: State<Mutex<UserDb>>) -> Option<User> {
     let user_db = user_db.lock().unwrap();
     user_db.get_current_user()
 }
+
+#[tauri::command]
+pub fn get_users(user_db: State<Mutex<UserDb>>) -> Vec<User> {
+    let user_db = user_db.lock().unwrap();
+    user_db.get_users()
+}
+
+#[tauri::command]
+pub fn make_admin(user: User, user_db: State<Mutex<UserDb>>) -> Result<(),UserDbError> {
+    let user_db = user_db.lock().unwrap();
+
+    let mut new_user = user.clone();
+    new_user.is_admin = true;
+
+    user_db.edit(&user, new_user)?;
+
+    Ok(())
+}

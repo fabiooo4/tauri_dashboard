@@ -1,6 +1,6 @@
 use std::{
     fs::{self, File},
-    io::{BufRead, Write},
+    io::Write,
     path::Path,
     str::from_utf8,
 };
@@ -9,16 +9,16 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, PartialEq, Eq, Debug, Clone)]
 pub struct User {
-    username: String,
+    pub username: String,
     password: String,
-    is_admin: bool,
+    pub is_admin: bool,
 }
 
 impl User {
     pub fn new(username: &str, password: &str) -> Self {
         Self {
-            username: username.to_string(),
-            password: password.to_string(),
+            username: String::from(username),
+            password: String::from(password),
             is_admin: username == "admin" && password == "admin",
         }
     }
@@ -113,15 +113,39 @@ impl<'a> UserDb<'a> {
             return Err(UserDbError::ExistingUser);
         }
 
-        let mut wtr = csv::WriterBuilder::new()
+        let mut writer = csv::WriterBuilder::new()
             .has_headers(false)
             .from_writer(self.get_db());
 
-        wtr.serialize(new_user)?;
+        writer.serialize(new_user)?;
 
-        wtr.flush()?;
+        writer.flush()?;
 
         Ok(())
+    }
+
+    pub fn edit(&self, old_value: &User, new_value: User) -> Result<(), UserDbError> {
+        if !self.contains(old_value) {
+            return Err(UserDbError::NoUserFound);
+        }
+
+        let mut writer = csv::WriterBuilder::new()
+            .has_headers(false)
+            .from_writer(self.get_db());
+
+        // TODO FIX EDITING A RECORD
+        /* let mut reader = csv::Reader::from_reader(self.get_db());
+        reader.deserialize::<User>().map(|u| u.unwrap()).find(|u| u == old_value).unwrap(); */
+
+        writer.serialize(&new_value)?;
+
+        Ok(())
+    }
+
+    pub fn get_users(&self) -> Vec<User> {
+        let mut reader = csv::Reader::from_reader(self.get_db());
+
+        reader.deserialize::<User>().map(|u| u.unwrap()).collect()
     }
 }
 

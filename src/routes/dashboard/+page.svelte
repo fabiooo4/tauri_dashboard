@@ -1,29 +1,34 @@
 <script lang="ts">
-    import { goto } from "$app/navigation";
   import Card from "$lib/components/Card.svelte";
-  import { Button } from "$lib/components/ui/button";
   import { userSchema } from "$lib/types/schemas.js";
-  import { invoke } from "@tauri-apps/api/core";
 
   let { data } = $props();
 
   let currentUser: User = userSchema.parse(data.user);
 
-  let cards = [
+  let cards: Array<{
+    title: string;
+    subtitle: string;
+    button: string;
+    href?: string;
+  }> = [
     {
       title: "Stats Overview",
       subtitle: "This card could contain stats or charts.",
       button: "Details",
+      href: "/dashboard/stats",
     },
     {
       title: "Recent Activity",
       subtitle: "This card could contain recent user activity.",
       button: "View All",
+      href: undefined,
     },
     {
       title: "Notifications",
       subtitle: "This card could contain user notifications.",
       button: "Clear All",
+      href: undefined,
     },
   ];
 </script>

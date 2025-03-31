@@ -8,4 +8,5 @@
 <main class="p-4">
   <h1 class="text-3xl font-bold">{currentUser.username}</h1>
   <p>Password: {currentUser.password}</p>
+  <p>Is admin: {currentUser.is_admin}</p>
 </main>
