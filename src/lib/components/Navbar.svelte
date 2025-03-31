@@ -4,7 +4,7 @@
 
   let {
     paths,
-  }: { paths: Array<{ path: string; name: string }>} =
+  }: { paths: Array<{ path: string; name: string; callback?: any }>} =
     $props();
 </script>
 
@@ -15,10 +15,11 @@
   <div class="cursor-auto">Dash app</div>
 
   <div class="space-x-2 cursor-default">
-    {#each paths as { path, name }}
+    {#each paths as { path, name, callback }}
       <a
         href={path}
         aria-current={page.url.pathname === "/"}
+        onclick={callback}
         class="hover:bg-primary-foreground hover:text-primary rounded p-2
           hover:transition-all duration-100
           {page.url.pathname === path

@@ -1,6 +1,3 @@
-<script lang="ts">
-</script>
-
 <main class="flex flex-col p-4">
   <h1 class="text-2xl mb-4">
     Welcome to the Dash Multi-Page App
@@ -19,4 +16,6 @@
     <li class="odd:bg-primary-foreground">Model-View-Controller architecture</li>
     <li class="odd:bg-primary-foreground">CSV-based user data storage</li>
   </ul>
+
+  <a href="/dashboard" class="mt-4 underline">Dashboard</a>
 </main>

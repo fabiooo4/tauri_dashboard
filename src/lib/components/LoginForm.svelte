@@ -1,23 +1,22 @@
 <script lang="ts">
   import * as Form from "$lib/components/ui/form";
   import { Input } from "$lib/components/ui/input";
-  import { userSchema } from "$lib/types/schemas";
+  import { userFormSchema } from "$lib/types/schemas";
   import { invoke } from "@tauri-apps/api/core";
   import { type SuperValidated, superForm } from "sveltekit-superforms";
   import { zodClient } from "sveltekit-superforms/adapters";
   import { goto } from "$app/navigation";
 
-  let { data }: { data: SuperValidated<User> } = $props();
+  let { data }: { data: SuperValidated<UserForm> } = $props();
 
   const form = superForm(data, {
-    validators: zodClient(userSchema),
+    validators: zodClient(userFormSchema),
     dataType: "json",
   });
 
   const { form: formData } = form;
 
   let errorMsg = $state("");
-  let user: User = $state({ username: "", password: "" });
 
   async function login(event: Event) {
     event.preventDefault();
@@ -26,16 +25,15 @@
       username: $formData.username,
       password: $formData.password,
     })
-      .then((usr) => {
+      .then(() => {
         errorMsg = "";
-        user = userSchema.parse(usr);
         goto("/dashboard");
       })
       .catch((err) => (errorMsg = err));
   }
 </script>
 
-<p class="text-red-500 font-bold">{errorMsg}</p>
+<p class="text-destructive font-bold">{errorMsg}</p>
 <form onsubmit={login}>
   <Form.Field {form} name="username">
     <Form.Control let:attrs>
@@ -48,7 +46,7 @@
   <Form.Field {form} name="password">
     <Form.Control let:attrs>
       <Form.Label>Password</Form.Label>
-      <Input {...attrs} bind:value={$formData.password} />
+      <Input {...attrs} type="password" bind:value={$formData.password} />
     </Form.Control>
     <!-- <Form.Description>This is your private password.</Form.Description> -->
     <Form.FieldErrors />

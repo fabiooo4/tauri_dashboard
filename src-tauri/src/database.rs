@@ -10,6 +10,7 @@ use serde::{Deserialize, Serialize};
 pub struct User {
     username: String,
     password: String,
+    is_admin: bool,
 }
 
 impl User {
@@ -17,6 +18,7 @@ impl User {
         Self {
             username: username.to_string(),
             password: password.to_string(),
+            is_admin: username == "admin" && password == "admin",
         }
     }
 
@@ -38,8 +40,8 @@ impl<'a> UserDb<'a> {
         }
     }
 
-    pub fn set_current_user(&mut self, user: &User) {
-        self.current_user = Some(user.clone());
+    pub fn set_current_user(&mut self, user: Option<User>) {
+        self.current_user = user;
     }
 
     pub fn get_current_user(&self) -> Option<User> {

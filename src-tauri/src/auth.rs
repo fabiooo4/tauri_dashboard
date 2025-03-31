@@ -19,11 +19,19 @@ pub fn login(
 
     match user_db.contains(&user) {
         true => {
-            user_db.set_current_user(&user);
+            user_db.set_current_user(Some(user.clone()));
             Ok(user)
         },
         false => Err(UserDbError::NoUserFound),
     }
+}
+
+#[tauri::command]
+pub fn logout(
+    user_db: State<Mutex<UserDb>>,
+) {
+    let mut user_db = user_db.lock().unwrap();
+    user_db.set_current_user(None);
 }
 
 #[tauri::command]
@@ -37,3 +45,10 @@ pub fn register(
 
     Ok(())
 }
+
+#[tauri::command]
+pub fn get_current_user(user_db: State<Mutex<UserDb>>) -> Option<User> {
+    let user_db = user_db.lock().unwrap();
+    user_db.get_current_user()
+}
+

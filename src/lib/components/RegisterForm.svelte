@@ -1,16 +1,16 @@
 <script lang="ts">
   import * as Form from "$lib/components/ui/form";
   import { Input } from "$lib/components/ui/input";
-  import { userSchema } from "$lib/types/schemas";
+  import { userFormSchema } from "$lib/types/schemas";
   import { invoke } from "@tauri-apps/api/core";
   import { type SuperValidated, superForm } from "sveltekit-superforms";
   import { zodClient } from "sveltekit-superforms/adapters";
   import { goto } from "$app/navigation";
 
-  let { data }: { data: SuperValidated<User> } = $props();
+  let { data }: { data: SuperValidated<UserForm> } = $props();
 
   const form = superForm(data, {
-    validators: zodClient(userSchema),
+    validators: zodClient(userFormSchema),
     dataType: "json",
   });
 
