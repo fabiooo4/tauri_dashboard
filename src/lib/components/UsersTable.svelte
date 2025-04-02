@@ -1,21 +1,40 @@
 <script lang="ts">
   import { invoke } from "@tauri-apps/api/core";
   import Button from "./ui/button/button.svelte";
+  import { toast } from "svelte-sonner";
+  import { userSchema } from "$lib/types/schemas";
 
   let { users }: { users: Array<User> } = $props();
 
-  let mess = $state("");
   async function makeAdmin(user: User) {
-    invoke("make_admin", { user })
-      .then(() => (mess = "admin"))
-      .catch((e) => (mess = "ERROR: " + e));
+    await invoke("toggle_admin", { user })
+      .then((admin) =>
+        toast.success("Promoted " + user.username, {
+          action: {
+            label: "Undo",
+            onClick: async () =>
+              await invoke("toggle_admin", { user: userSchema.parse(admin) }),
+          },
+        }),
+      )
+      .catch((e) =>
+        toast.error("Failed to promote " + user.username, {
+          description: e,
+          action: {
+            label: "Dismiss",
+            onClick: () => {},
+          },
+        }),
+      );
   }
 </script>
 
 <div class="rounded-xl">
   {#each users as user}
     {#if !user.is_admin}
-      <div class="flex flex-row even:bg-secondary odd:bg-transparent text-center items-center">
+      <div
+        class="flex flex-row even:bg-secondary odd:bg-transparent text-center items-center"
+      >
         <Button
           variant="default"
           class="text-destructive-foreground p-3.5"
@@ -25,5 +44,4 @@
       </div>
     {/if}
   {/each}
-  <p>{mess}</p>
 </div>

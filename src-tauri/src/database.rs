@@ -1,8 +1,6 @@
 use std::{
     fs::{self, File},
-    io::{Read, Seek, SeekFrom, Write},
     path::Path,
-    str::from_utf8,
 };
 
 use serde::{Deserialize, Serialize};
@@ -61,31 +59,11 @@ impl<'a> UserDb<'a> {
                 File::create(self.path).expect("Can't open file in read-write mode");
             }
 
-            let mut db = File::options()
+            let db = File::options()
                 .read(true)
-                .append(true)
+                .write(true)
                 .open(self.path)
                 .expect("Can't open file in read-write mode");
-
-            // If file is empty insert a csv header by serializing the User struct
-            if db.metadata().expect("Unable to access file").len() == 0 {
-                let mut wtr = csv::Writer::from_writer(vec![]);
-
-                wtr.serialize(User::new("", "")).unwrap();
-
-                // remove the last line to keep only the header
-                let content = wtr.into_inner().expect("Unable to serialize user");
-                let header = from_utf8(&content)
-                    .expect("Invalid UTF-8 sequence")
-                    .lines()
-                    .next()
-                    .unwrap()
-                    .to_owned()
-                    + "\n";
-
-                db.write_all(header.as_bytes())
-                    .unwrap_or_else(|_| panic!("Unable to write to file: {:?}", self.path));
-            }
 
             db
         } else {
@@ -113,19 +91,22 @@ impl<'a> UserDb<'a> {
             return Err(UserDbError::ExistingUser);
         }
 
-        let mut writer = csv::WriterBuilder::new()
-            .has_headers(false)
-            .from_writer(self.get_db());
+        let mut reader = csv::Reader::from_reader(self.get_db());
+        let mut writer = csv::Writer::from_writer(self.get_db());
+
+        for result in reader.deserialize::<User>() {
+            let user = result?;
+
+            writer.serialize(user)?;
+        }
 
         writer.serialize(new_user)?;
-
         writer.flush()?;
 
         Ok(())
     }
 
     pub fn edit(&self, old_value: &User, new_value: User) -> Result<(), UserDbError> {
-        // Edit the record old_value with the new_value
         if !self.contains(old_value) {
             return Err(UserDbError::NoUserFound);
         }
@@ -133,21 +114,18 @@ impl<'a> UserDb<'a> {
         let mut reader = csv::Reader::from_reader(self.get_db());
         let mut writer = csv::Writer::from_writer(self.get_db());
 
-        // Clear the file
-        let mut db = self.get_db();
-
         for result in reader.deserialize::<User>() {
             let mut user = result?;
+
+            // Edit the record old_value with the new_value
             if user == *old_value {
                 user = new_value.clone();
             }
 
-            db.rewind().unwrap();
             writer.serialize(user)?;
         }
 
         writer.flush()?;
-
 
         Ok(())
     }

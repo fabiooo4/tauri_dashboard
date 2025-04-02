@@ -16,7 +16,7 @@ pub fn run() {
             auth::register,
             auth::get_current_user,
             auth::get_users,
-            auth::make_admin,
+            auth::toggle_admin,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

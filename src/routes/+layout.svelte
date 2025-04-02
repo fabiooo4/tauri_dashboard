@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { Toaster } from "$lib/components/ui/sonner";
   import { logout } from "$lib/auth";
   import Navbar from "$lib/components/Navbar.svelte";
   import { listen, type UnlistenFn } from "@tauri-apps/api/event";
@@ -46,4 +47,6 @@
   <Navbar {paths} />
 
   {@render children()}
+
+  <Toaster />
 </div>
