@@ -20,15 +20,13 @@ pub fn login(
         return Err(UserDbError::EmptyUser);
     }
 
-    match user_db.contains(&user) {
-        true => {
-            user_db.set_current_user(Some(user.clone()));
-            app.emit("logged-in", user.clone())
-                .expect("Failed to emit logged-in event");
-            Ok(user)
-        }
-        false => Err(UserDbError::NoUserFound),
-    }
+    let logged_user = user_db.get_user(&user)?;
+
+    user_db.set_current_user(Some(logged_user.clone()));
+    app.emit("logged-in", logged_user.clone())
+        .expect("Failed to emit logged-in event");
+
+    Ok(user)
 }
 
 #[tauri::command]

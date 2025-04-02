@@ -71,14 +71,29 @@ impl<'a> UserDb<'a> {
         }
     }
 
-    /// Check if a user is already registered
-    pub fn contains(&self, user: &User) -> bool {
+    /// Returns the user if it is already registered
+    pub fn get_user(&self, user: &User) -> Result<User, UserDbError> {
+        let mut reader = csv::Reader::from_reader(self.get_db());
+
+        for result in reader.deserialize::<User>() {
+            let db_user: User = result?;
+
+            if db_user.username == user.username && db_user.password == user.password {
+                return Ok(db_user);
+            }
+        }
+
+        return Err(UserDbError::NoUserFound);
+    }
+
+    /// Check if a username is already registered
+    pub fn contains(&self, username: &str) -> bool {
         let mut reader = csv::Reader::from_reader(self.get_db());
 
         reader
             .deserialize::<User>()
             .filter_map(|result| result.ok())
-            .any(|u| u == *user)
+            .any(|u| u.username == username)
     }
 
     /// Add a user entry to the database
@@ -87,7 +102,7 @@ impl<'a> UserDb<'a> {
             return Err(UserDbError::EmptyUser);
         }
 
-        if self.contains(&new_user) {
+        if self.contains(&new_user.username) {
             return Err(UserDbError::ExistingUser);
         }
 
@@ -107,7 +122,7 @@ impl<'a> UserDb<'a> {
     }
 
     pub fn edit(&self, old_value: &User, new_value: User) -> Result<(), UserDbError> {
-        if !self.contains(old_value) {
+        if !self.contains(&old_value.username) {
             return Err(UserDbError::NoUserFound);
         }
 

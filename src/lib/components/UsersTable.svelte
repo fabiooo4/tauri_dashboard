@@ -20,10 +20,6 @@
       .catch((e) =>
         toast.error("Failed to promote " + user.username, {
           description: e,
-          action: {
-            label: "Dismiss",
-            onClick: () => {},
-          },
         }),
       );
   }

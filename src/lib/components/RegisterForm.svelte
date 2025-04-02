@@ -6,6 +6,7 @@
   import { type SuperValidated, superForm } from "sveltekit-superforms";
   import { zodClient } from "sveltekit-superforms/adapters";
   import { goto } from "$app/navigation";
+  import { toast } from "svelte-sonner";
 
   let { data }: { data: SuperValidated<UserForm> } = $props();
 
@@ -27,6 +28,11 @@
     })
       .then(() => {
         errorMsg = "";
+
+        toast.success("Registered successfully", {
+          description: "Please login to access the dashboard",
+        });
+
         goto("/login");
       })
       .catch((err) => (errorMsg = err));
