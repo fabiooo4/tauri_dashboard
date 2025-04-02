@@ -1,6 +1,6 @@
 use std::{
     fs::{self, File},
-    io::Write,
+    io::{Read, Seek, SeekFrom, Write},
     path::Path,
     str::from_utf8,
 };
@@ -125,19 +125,29 @@ impl<'a> UserDb<'a> {
     }
 
     pub fn edit(&self, old_value: &User, new_value: User) -> Result<(), UserDbError> {
+        // Edit the record old_value with the new_value
         if !self.contains(old_value) {
             return Err(UserDbError::NoUserFound);
         }
 
-        let mut writer = csv::WriterBuilder::new()
-            .has_headers(false)
-            .from_writer(self.get_db());
+        let mut reader = csv::Reader::from_reader(self.get_db());
+        let mut writer = csv::Writer::from_writer(self.get_db());
 
-        // TODO FIX EDITING A RECORD
-        /* let mut reader = csv::Reader::from_reader(self.get_db());
-        reader.deserialize::<User>().map(|u| u.unwrap()).find(|u| u == old_value).unwrap(); */
+        // Clear the file
+        let mut db = self.get_db();
 
-        writer.serialize(&new_value)?;
+        for result in reader.deserialize::<User>() {
+            let mut user = result?;
+            if user == *old_value {
+                user = new_value.clone();
+            }
+
+            db.rewind().unwrap();
+            writer.serialize(user)?;
+        }
+
+        writer.flush()?;
+
 
         Ok(())
     }
